@@ -4,14 +4,33 @@ import { collection, doc, getDoc, runTransaction } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../context/AuthContext'
 import { formatDataLonga, isValidCPF, maskCPF, maskPhone } from '../lib/validators'
+import { OPCOES_COMO_SOUBE } from '../lib/comoSoube'
 
-const OPCOES_COMO_SOUBE = [
-  'Redes sociais',
-  'Indicação de amigo ou familiar',
-  'Site da CCG',
-  'Imprensa',
-  'Outro',
-]
+const MAX_PARTICIPANTES = 3
+
+function participanteVazio() {
+  return {
+    nomeCompleto: '',
+    telefone: '',
+    cpf: '',
+    comoSoube: '',
+    comoSoubeDetalhe: '',
+  }
+}
+
+function opcaoSelecionada(comoSoube) {
+  return OPCOES_COMO_SOUBE.find((o) => o.valor === comoSoube)
+}
+
+function participanteValido(p) {
+  if (!p.nomeCompleto.trim()) return false
+  if (!p.telefone.trim()) return false
+  if (!isValidCPF(p.cpf)) return false
+  if (!p.comoSoube) return false
+  const opcao = opcaoSelecionada(p.comoSoube)
+  if (opcao?.precisaDetalhe && !p.comoSoubeDetalhe.trim()) return false
+  return true
+}
 
 export default function Inscricao() {
   const { visitaId } = useParams()
@@ -19,10 +38,7 @@ export default function Inscricao() {
   const { user } = useAuth()
 
   const [visita, setVisita] = useState(null)
-  const [nome, setNome] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [cpf, setCpf] = useState('')
-  const [comoSoube, setComoSoube] = useState('')
+  const [participantes, setParticipantes] = useState([participanteVazio()])
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [confirmado, setConfirmado] = useState(null)
@@ -35,21 +51,41 @@ export default function Inscricao() {
     carregar()
   }, [visitaId])
 
+  function atualizarParticipante(index, campo, valor) {
+    setParticipantes((atual) =>
+      atual.map((p, i) => {
+        if (i !== index) return p
+        const novo = { ...p, [campo]: valor }
+        if (campo === 'comoSoube') novo.comoSoubeDetalhe = ''
+        return novo
+      })
+    )
+  }
+
+  function adicionarParticipante() {
+    if (participantes.length >= MAX_PARTICIPANTES) return
+    setParticipantes((atual) => [...atual, participanteVazio()])
+  }
+
+  function removerParticipante(index) {
+    setParticipantes((atual) => atual.filter((_, i) => i !== index))
+  }
+
+  const todosValidos = participantes.every(participanteValido)
+
   async function handleSubmit(e) {
     e.preventDefault()
     setErro('')
 
-    if (!isValidCPF(cpf)) {
-      setErro('CPF inválido.')
-      return
-    }
-    if (!comoSoube) {
-      setErro('Selecione como soube da visita.')
+    if (!todosValidos) {
+      setErro('Preencha todos os campos de todos os participantes.')
       return
     }
 
     setEnviando(true)
     try {
+      const necessarias = participantes.length
+
       const horarioEscolhido = await runTransaction(db, async (tx) => {
         const visitaRef = doc(db, 'visitas', visitaId)
         const visitaSnap = await tx.get(visitaRef)
@@ -61,29 +97,34 @@ export default function Inscricao() {
         const ocupadas10 = v.vagas10Ocupadas ?? 0
 
         let horario
-        if (ocupadas08 < capacidade) {
+        if (capacidade - ocupadas08 >= necessarias) {
           horario = '08h30'
-          tx.update(visitaRef, { vagas08Ocupadas: ocupadas08 + 1 })
-        } else if (ocupadas10 < capacidade) {
+          tx.update(visitaRef, { vagas08Ocupadas: ocupadas08 + necessarias })
+        } else if (capacidade - ocupadas10 >= necessarias) {
           horario = '10h00'
-          tx.update(visitaRef, { vagas10Ocupadas: ocupadas10 + 1 })
+          tx.update(visitaRef, { vagas10Ocupadas: ocupadas10 + necessarias })
         } else {
-          throw new Error('Esta visita não possui mais vagas disponíveis.')
+          throw new Error(
+            'Não há vagas suficientes num mesmo horário para todo o grupo.'
+          )
         }
 
+        const grupoId = `${user?.uid ?? 'anon'}_${Date.now()}`
         const inscricoesRef = collection(db, 'visitas', visitaId, 'inscricoes')
-        const inscricaoRef = doc(
-          inscricoesRef,
-          `${user?.uid ?? 'anon'}_${Date.now()}`
-        )
-        tx.set(inscricaoRef, {
-          nomeCompleto: nome,
-          telefone,
-          cpf: cpf.replace(/\D/g, ''),
-          comoSoube,
-          horario,
-          uid: user?.uid ?? null,
-          criadoEm: new Date().toISOString(),
+
+        participantes.forEach((p, i) => {
+          const inscricaoRef = doc(inscricoesRef, `${grupoId}_${i}`)
+          tx.set(inscricaoRef, {
+            grupoId,
+            nomeCompleto: p.nomeCompleto,
+            telefone: p.telefone,
+            cpf: p.cpf.replace(/\D/g, ''),
+            comoSoube: p.comoSoube,
+            comoSoubeDetalhe: p.comoSoubeDetalhe || null,
+            horario,
+            uid: user?.uid ?? null,
+            criadoEm: new Date().toISOString(),
+          })
         })
 
         return horario
@@ -108,7 +149,9 @@ export default function Inscricao() {
           </div>
           <h1 className="text-lg font-semibold text-navy-900">Inscrição confirmada</h1>
           <p className="text-sm text-navy-500 mt-2">
-            Sua visita foi marcada para{' '}
+            {participantes.length > 1
+              ? `Inscrição de ${participantes.length} pessoas confirmada para`
+              : 'Sua visita foi marcada para'}{' '}
             <strong>{visita && formatDataLonga(new Date(visita.data + 'T00:00:00'))}</strong>{' '}
             às <strong>{confirmado}</strong>.
           </p>
@@ -142,80 +185,139 @@ export default function Inscricao() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-navy-100 p-6 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-navy-700 mb-1">
-                Nome completo
-              </label>
-              <input
-                type="text"
-                required
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Seu nome completo"
-                className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-navy-700 mb-1">
-                Telefone
-              </label>
-              <input
-                type="tel"
-                required
-                value={telefone}
-                onChange={(e) => setTelefone(maskPhone(e.target.value))}
-                placeholder="(21) 90000-0000"
-                className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-navy-700 mb-1">CPF</label>
-              <input
-                type="text"
-                required
-                value={cpf}
-                onChange={(e) => setCpf(maskCPF(e.target.value))}
-                placeholder="000.000.000-00"
-                className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-navy-700 mb-1">
-                Como soube da visita?
-              </label>
-              <select
-                required
-                value={comoSoube}
-                onChange={(e) => setComoSoube(e.target.value)}
-                className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {participantes.map((p, index) => {
+            const opcao = opcaoSelecionada(p.comoSoube)
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-navy-100 p-6 shadow-sm space-y-4"
               >
-                <option value="" disabled>
-                  Selecione uma opção
-                </option>
-                {OPCOES_COMO_SOUBE.map((opcao) => (
-                  <option key={opcao} value={opcao}>
-                    {opcao}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-navy-800">
+                    {index === 0 ? 'Seus dados' : `Participante ${index + 1}`}
+                  </h2>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => removerParticipante(index)}
+                      className="text-xs text-navy-400 hover:text-red-500 transition"
+                    >
+                      Remover
+                    </button>
+                  )}
+                </div>
 
-            {erro && <p className="text-sm text-red-600">{erro}</p>}
+                <div>
+                  <label className="block text-sm font-medium text-navy-700 mb-1">
+                    Nome completo
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={p.nomeCompleto}
+                    onChange={(e) =>
+                      atualizarParticipante(index, 'nomeCompleto', e.target.value)
+                    }
+                    placeholder="Nome completo"
+                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                  />
+                </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-navy-700 mb-1">
+                    Telefone
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={p.telefone}
+                    onChange={(e) =>
+                      atualizarParticipante(index, 'telefone', maskPhone(e.target.value))
+                    }
+                    placeholder="(21) 90000-0000"
+                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-navy-700 mb-1">CPF</label>
+                  <input
+                    type="text"
+                    required
+                    value={p.cpf}
+                    onChange={(e) =>
+                      atualizarParticipante(index, 'cpf', maskCPF(e.target.value))
+                    }
+                    placeholder="000.000.000-00"
+                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-navy-700 mb-1">
+                    Como soube da visita?
+                  </label>
+                  <select
+                    required
+                    value={p.comoSoube}
+                    onChange={(e) =>
+                      atualizarParticipante(index, 'comoSoube', e.target.value)
+                    }
+                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                  >
+                    <option value="" disabled>
+                      Selecione uma opção
+                    </option>
+                    {OPCOES_COMO_SOUBE.map((o) => (
+                      <option key={o.valor} value={o.valor}>
+                        {o.valor}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {opcao?.precisaDetalhe && (
+                  <div>
+                    <label className="block text-sm font-medium text-navy-700 mb-1">
+                      {opcao.labelDetalhe}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={p.comoSoubeDetalhe}
+                      onChange={(e) =>
+                        atualizarParticipante(index, 'comoSoubeDetalhe', e.target.value)
+                      }
+                      placeholder={opcao.labelDetalhe}
+                      className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                    />
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {participantes.length < MAX_PARTICIPANTES && (
             <button
-              type="submit"
-              disabled={enviando}
-              className="w-full rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition disabled:opacity-60"
+              type="button"
+              onClick={adicionarParticipante}
+              className="w-full rounded-lg border border-dashed border-navy-300 text-sm font-medium text-navy-600 py-2.5 hover:border-navy-500 hover:text-navy-800 transition"
             >
-              {enviando ? 'Confirmando...' : 'Confirmar'}
+              + Adicionar participante
             </button>
-          </form>
-        </div>
+          )}
+
+          {erro && <p className="text-sm text-red-600">{erro}</p>}
+
+          <button
+            type="submit"
+            disabled={enviando || !todosValidos}
+            className="w-full rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {enviando ? 'Confirmando...' : 'Confirmar'}
+          </button>
+        </form>
       </div>
     </div>
   )
