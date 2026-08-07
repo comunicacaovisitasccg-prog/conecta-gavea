@@ -148,6 +148,8 @@ export default function Inscricao() {
             uid: user?.uid ?? null,
             criadoEm: new Date().toISOString(),
             sincronizadoPlanilha: false,
+            cancelada: false,
+            confirmadoPresenca: false,
           })
         })
 

@@ -5,6 +5,7 @@ import { collection, getDocs, orderBy, query, where } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useAuth } from '../context/AuthContext'
 import Carrossel from '../components/Carrossel'
+import BottomNav from '../components/BottomNav'
 import { formatDataLonga } from '../lib/validators'
 
 export default function Home() {
@@ -53,7 +54,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-navy-50">
+    <div className="min-h-screen bg-navy-50 pb-20">
       <header className="flex items-center justify-between px-5 py-4 max-w-2xl mx-auto">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center">
@@ -123,6 +124,8 @@ export default function Home() {
           )}
         </section>
       </main>
+
+      <BottomNav />
     </div>
   )
 }

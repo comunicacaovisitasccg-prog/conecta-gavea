@@ -4,6 +4,8 @@ import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import Home from './pages/Home'
 import Inscricao from './pages/Inscricao'
+import MinhasInscricoes from './pages/MinhasInscricoes'
+import Comprovantes from './pages/Comprovantes'
 
 function RotaPrivada({ children }) {
   const { user, loading } = useAuth()
@@ -60,6 +62,22 @@ export default function App() {
           element={
             <RotaPrivada>
               <Inscricao />
+            </RotaPrivada>
+          }
+        />
+        <Route
+          path="/minhas-inscricoes"
+          element={
+            <RotaPrivada>
+              <MinhasInscricoes />
+            </RotaPrivada>
+          }
+        />
+        <Route
+          path="/comprovantes"
+          element={
+            <RotaPrivada>
+              <Comprovantes />
             </RotaPrivada>
           }
         />
