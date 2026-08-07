@@ -15,6 +15,8 @@ import BottomNav from '../components/BottomNav'
 import { formatDataLonga } from '../lib/validators'
 
 const DIAS_ANTES_PARA_CONFIRMAR = 2
+const LOGO_URL = 'https://i.imgur.com/bbQYRzX.png'
+const MASCOTE_URL = 'https://i.imgur.com/Itr6T2h.jpeg'
 
 function extrairVisitaId(refPath) {
   const partes = refPath.split('/')
@@ -132,127 +134,119 @@ export default function MinhasInscricoes() {
   }
 
   return (
-    <div className="min-h-screen bg-navy-50 pb-20">
-      <header className="flex items-center justify-between px-5 py-4 max-w-2xl mx-auto">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-navy-800 flex items-center justify-center">
-            <span className="text-lime-400 font-bold text-xs">CCG</span>
+    <div className="min-h-screen bg-cream pb-20">
+      <div className="max-w-2xl mx-auto bg-white min-h-screen flex flex-col">
+        <header className="flex items-center justify-between px-6 py-5 border-b border-navy/[0.07]">
+          <div className="flex items-center gap-2.5">
+            <img src={LOGO_URL} alt="Consórcio Construtor Gávea" className="h-[19px] w-auto object-contain" />
+            <span className="text-[12.5px] font-medium text-navy">
+              {user?.displayName ?? user?.email}
+            </span>
           </div>
-          <span className="text-sm font-medium text-navy-700">
-            {user?.displayName ?? user?.email}
-          </span>
-        </div>
-        <button
-          onClick={handleSair}
-          className="text-sm text-navy-400 hover:text-navy-700 transition"
-        >
-          Sair
-        </button>
-      </header>
+          <button onClick={handleSair} className="text-[12.5px] text-navy/40 hover:text-navy/70 transition">
+            Sair
+          </button>
+        </header>
 
-      <main className="max-w-2xl mx-auto px-5">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-navy-900 tracking-tight">
+        <main className="flex-1 px-6 pt-7 pb-6">
+          <h1 className="text-[19px] font-semibold text-navy tracking-tight mb-6">
             Minhas inscrições
           </h1>
-        </div>
 
-        {carregando ? (
-          <p className="text-sm text-navy-300">Carregando...</p>
-        ) : inscricoes.length === 0 ? (
-          <p className="text-sm text-navy-300">
-            Você ainda não tem inscrições em visitas.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {inscricoes.map((inscricao) => {
-              const status = statusConfirmacao(inscricao)
-              return (
-                <div
-                  key={inscricao.id}
-                  className="bg-white rounded-2xl border border-navy-100 p-5 shadow-sm"
-                >
-                  <p className="text-base font-semibold text-navy-900">
-                    {formatDataLonga(new Date(inscricao.visitaId + 'T00:00:00'))}
-                  </p>
-                  <p className="text-sm text-navy-500 mt-0.5">
-                    {inscricao.horario} · {inscricao.nomeCompleto}
-                  </p>
+          {carregando ? (
+            <p className="text-sm text-navy/35">Carregando...</p>
+          ) : inscricoes.length === 0 ? (
+            <div className="flex flex-col items-center text-center px-2.5 pt-3.5 pb-10">
+              <div className="w-16 h-16 rounded-full bg-[#eef3e5] flex items-center justify-center overflow-hidden mb-3.5">
+                <img src={MASCOTE_URL} alt="Mascote" className="w-full h-full object-contain scale-125" />
+              </div>
+              <p className="text-[13px] text-navy/45">
+                Você ainda não tem inscrições em visitas.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 mb-8">
+              {inscricoes.map((inscricao) => {
+                const status = statusConfirmacao(inscricao)
+                return (
+                  <div key={inscricao.id} className="border border-navy/10 rounded-xl px-4 py-4">
+                    <p className="text-sm font-semibold text-navy">
+                      {formatDataLonga(new Date(inscricao.visitaId + 'T00:00:00'))}
+                    </p>
+                    <p className="text-xs text-navy/50 mt-0.5">
+                      {inscricao.horario} · {inscricao.nomeCompleto}
+                    </p>
 
-                  <div className="flex items-center gap-2 mt-4">
-                    <button
-                      onClick={() => setParaCancelar(inscricao)}
-                      className="flex-1 rounded-lg border border-navy-200 text-sm font-medium text-navy-600 py-2 hover:border-red-300 hover:text-red-500 transition"
-                    >
-                      Cancelar visita
-                    </button>
-
-                    {status.jaConfirmado ? (
-                      <span className="flex-1 text-center rounded-lg bg-navy-50 text-sm font-medium text-navy-500 py-2">
-                        Presença confirmada
-                      </span>
-                    ) : (
+                    <div className="flex items-center gap-2 mt-3.5">
                       <button
-                        onClick={() => confirmarPresenca(inscricao)}
-                        disabled={!status.podeConfirmar || processando}
-                        title={status.textoAjuda || ''}
-                        className="flex-1 rounded-lg bg-navy-800 text-white text-sm font-medium py-2 hover:bg-navy-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                        onClick={() => setParaCancelar(inscricao)}
+                        className="flex-1 border border-navy/15 rounded-lg py-2 text-xs font-medium text-navy/60 hover:border-red-300 hover:text-red-500 transition"
                       >
-                        Confirmar presença
+                        Cancelar visita
                       </button>
+
+                      {status.jaConfirmado ? (
+                        <span className="flex-1 text-center bg-mint text-green rounded-lg py-2 text-xs font-semibold">
+                          Presença confirmada
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => confirmarPresenca(inscricao)}
+                          disabled={!status.podeConfirmar || processando}
+                          title={status.textoAjuda || ''}
+                          className="flex-1 bg-navy text-white rounded-lg py-2 text-xs font-medium hover:opacity-90 transition disabled:opacity-35 disabled:cursor-not-allowed"
+                        >
+                          Confirmar presença
+                        </button>
+                      )}
+                    </div>
+                    {!status.jaConfirmado && status.textoAjuda && (
+                      <p className="text-[11px] text-navy/35 mt-2 text-right">
+                        {status.textoAjuda}
+                      </p>
                     )}
                   </div>
-                  {!status.jaConfirmado && status.textoAjuda && (
-                    <p className="text-xs text-navy-300 mt-2 text-right">
-                      {status.textoAjuda}
-                    </p>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
+                )
+              })}
+            </div>
+          )}
 
-        <section className="mt-9">
-          <h2 className="text-lg font-semibold text-navy-900">Meus Comprovantes</h2>
-          <p className="text-sm text-navy-400 mb-4">
-            Acesse e apresente seu comprovante no dia da visita
-          </p>
+          <p className="text-[14.5px] font-semibold text-navy mb-0.5">Meus Comprovantes</p>
+          <p className="text-xs text-navy/40 mb-3.5">Acesse e apresente no dia da visita</p>
           <button
             onClick={() => navigate('/comprovantes')}
-            className="w-full rounded-lg border border-navy-200 bg-white text-sm font-medium text-navy-700 py-2.5 hover:bg-navy-50 transition"
+            className="w-full border border-navy/15 rounded-lg py-3 text-[13.5px] font-medium text-navy hover:bg-navy/[0.02] transition"
           >
             Acessar meus comprovantes
           </button>
-        </section>
-      </main>
+        </main>
+      </div>
 
       {paraCancelar && (
-        <div className="fixed inset-0 bg-navy-900/40 flex items-center justify-center px-4 z-30">
-          <div className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-base font-semibold text-navy-900">
-              Cancelar inscrição?
-            </h3>
-            <p className="text-sm text-navy-500 mt-2">
+        <div className="fixed inset-0 bg-navy/40 flex items-center justify-center px-4 z-30">
+          <div className="w-full max-w-[380px] bg-white rounded-[20px] p-6">
+            <h3 className="text-base font-semibold text-navy">Cancelar inscrição?</h3>
+            <p className="text-sm text-navy/55 mt-2">
               Tem certeza que deseja cancelar a visita de{' '}
-              <strong>{paraCancelar.nomeCompleto}</strong> em{' '}
-              <strong>
+              <strong className="text-navy">{paraCancelar.nomeCompleto}</strong> em{' '}
+              <strong className="text-navy">
                 {formatDataLonga(new Date(paraCancelar.visitaId + 'T00:00:00'))}
               </strong>{' '}
-              às <strong>{paraCancelar.horario}</strong>? Essa ação não pode ser desfeita.
+              às <strong className="text-navy">{paraCancelar.horario}</strong>? Essa ação não
+              pode ser desfeita.
             </p>
             <div className="flex items-center gap-2 mt-5">
               <button
                 onClick={() => setParaCancelar(null)}
                 disabled={processando}
-                className="flex-1 rounded-lg border border-navy-200 text-sm font-medium text-navy-600 py-2.5 hover:bg-navy-50 transition"
+                className="flex-1 border border-navy/15 rounded-lg py-2.5 text-sm font-medium text-navy/60 hover:bg-navy/[0.02] transition"
               >
                 Voltar
               </button>
               <button
                 onClick={confirmarCancelamento}
                 disabled={processando}
-                className="flex-1 rounded-lg bg-red-500 text-white text-sm font-medium py-2.5 hover:bg-red-600 transition disabled:opacity-60"
+                className="flex-1 bg-red-500 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-red-600 transition disabled:opacity-60"
               >
                 {processando ? 'Cancelando...' : 'Sim, cancelar'}
               </button>

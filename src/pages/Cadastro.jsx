@@ -62,91 +62,80 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-navy-50 px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="mx-auto w-14 h-14 rounded-xl bg-navy-800 flex items-center justify-center mb-4">
-            <span className="text-lime-400 font-bold text-lg tracking-tight">CCG</span>
-          </div>
-          <h1 className="text-xl font-semibold text-navy-900">Criar conta</h1>
-          <p className="text-sm text-navy-400 mt-1">Conecta Gávea · Visitas guiadas</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-cream px-4 py-10">
+      <div className="w-full max-w-[380px] bg-white border border-navy/[0.08] rounded-[20px] px-8 py-10">
+        <h1 className="text-[19px] font-semibold text-navy mb-0.5">Criar conta</h1>
+        <p className="text-[13px] text-navy/45 mb-7">Conecta Gávea · Visitas guiadas</p>
 
-        <div className="bg-white rounded-2xl border border-navy-100 p-6 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="nome" className="block text-sm font-medium text-navy-700 mb-1">
-                Nome completo
-              </label>
-              <input
-                id="nome"
-                type="text"
-                required
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Seu nome completo"
-                className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
-              />
-            </div>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="nome" className="block text-xs text-navy/50 mb-1.5">
+            Nome completo
+          </label>
+          <input
+            id="nome"
+            type="text"
+            required
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Seu nome completo"
+            className="w-full bg-transparent border-0 border-b border-navy/15 py-2 text-[14.5px] text-navy placeholder:text-navy/35 outline-none focus:border-navy/40 transition mb-5"
+          />
 
-            <div>
-              <label htmlFor="telefone" className="block text-sm font-medium text-navy-700 mb-1">
-                Telefone
-              </label>
-              <input
-                id="telefone"
-                type="tel"
-                required
-                value={telefone}
-                onChange={(e) => setTelefone(maskPhone(e.target.value))}
-                placeholder="(21) 90000-0000"
-                className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
-              />
-            </div>
+          <label htmlFor="telefone" className="block text-xs text-navy/50 mb-1.5">
+            Telefone
+          </label>
+          <input
+            id="telefone"
+            type="tel"
+            required
+            value={telefone}
+            onChange={(e) => setTelefone(maskPhone(e.target.value))}
+            placeholder="(21) 90000-0000"
+            className="w-full bg-transparent border-0 border-b border-navy/15 py-2 text-[14.5px] text-navy placeholder:text-navy/35 outline-none focus:border-navy/40 transition mb-5"
+          />
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-navy-700 mb-1">
-                E-mail
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
-              />
-            </div>
+          <label htmlFor="email" className="block text-xs text-navy/50 mb-1.5">
+            E-mail
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="seu@email.com"
+            className="w-full bg-transparent border-0 border-b border-navy/15 py-2 text-[14.5px] text-navy placeholder:text-navy/35 outline-none focus:border-navy/40 transition mb-5"
+          />
 
-            <PasswordInput
-              id="senha"
-              label="Senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Crie uma senha"
-            />
+          <PasswordInput
+            id="senha"
+            label="Senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            placeholder="Crie uma senha"
+          />
 
-            {senha.length > 0 && (
-              <ul className="grid grid-cols-2 gap-x-3 gap-y-1 -mt-2">
-                {Object.entries(REGRAS_LABEL).map(([chave, texto]) => (
-                  <li
-                    key={chave}
-                    className={`text-xs flex items-center gap-1.5 ${
-                      regras[chave] ? 'text-navy-600' : 'text-navy-300'
+          {senha.length > 0 && (
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-1 mt-3 mb-2">
+              {Object.entries(REGRAS_LABEL).map(([chave, texto]) => (
+                <li
+                  key={chave}
+                  className={`text-xs flex items-center gap-1.5 ${
+                    regras[chave] ? 'text-navy/70' : 'text-navy/30'
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      regras[chave] ? 'bg-greenfill' : 'bg-navy/15'
                     }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        regras[chave] ? 'bg-lime-500' : 'bg-navy-200'
-                      }`}
-                    />
-                    {texto}
-                  </li>
-                ))}
-              </ul>
-            )}
+                  />
+                  {texto}
+                </li>
+              ))}
+            </ul>
+          )}
 
+          <div className="mt-5">
             <PasswordInput
               id="confirmarSenha"
               label="Confirmar senha"
@@ -154,28 +143,28 @@ export default function Cadastro() {
               onChange={(e) => setConfirmarSenha(e.target.value)}
               placeholder="Repita a senha"
             />
-            {confirmarSenha.length > 0 && !senhasConferem && (
-              <p className="text-xs text-red-500 -mt-2">As senhas não coincidem.</p>
-            )}
+          </div>
+          {confirmarSenha.length > 0 && !senhasConferem && (
+            <p className="text-xs text-red-500 mt-1">As senhas não coincidem.</p>
+          )}
 
-            {erro && <p className="text-sm text-red-600">{erro}</p>}
+          {erro && <p className="text-sm text-red-500 mt-4">{erro}</p>}
 
-            <button
-              type="submit"
-              disabled={carregando}
-              className="w-full rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition disabled:opacity-60"
-            >
-              {carregando ? 'Criando conta...' : 'Criar conta'}
-            </button>
-          </form>
+          <button
+            type="submit"
+            disabled={carregando}
+            className="w-full bg-navy text-white rounded-lg py-[13px] text-sm font-medium mt-7 hover:opacity-90 transition disabled:opacity-60"
+          >
+            {carregando ? 'Criando conta...' : 'Criar conta'}
+          </button>
+        </form>
 
-          <p className="text-center text-sm text-navy-400 mt-6">
-            Já tem conta?{' '}
-            <Link to="/login" className="text-navy-800 font-medium hover:underline">
-              Entrar
-            </Link>
-          </p>
-        </div>
+        <p className="text-center text-[13px] text-navy/45 mt-6">
+          Já tem conta?{' '}
+          <Link to="/login" className="text-navy font-semibold">
+            Entrar
+          </Link>
+        </p>
       </div>
     </div>
   )

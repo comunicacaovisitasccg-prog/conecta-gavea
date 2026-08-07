@@ -22,7 +22,6 @@ function opcaoSelecionada(comoSoube) {
   return OPCOES_COMO_SOUBE.find((o) => o.valor === comoSoube)
 }
 
-// Retorna a mensagem de erro de um campo específico, ou null se estiver ok
 function erroDoCampo(p, campo) {
   switch (campo) {
     case 'nomeCompleto':
@@ -167,31 +166,34 @@ export default function Inscricao() {
   if (confirmado) {
     const plural = participantes.length > 1
     return (
-      <div className="min-h-screen flex items-center justify-center bg-navy-50 px-4">
-        <div className="w-full max-w-sm bg-white rounded-2xl border border-navy-100 p-6 text-center shadow-sm">
-          <div className="mx-auto w-12 h-12 rounded-full bg-navy-800 flex items-center justify-center mb-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c8e84a" strokeWidth="2">
+      <div className="min-h-screen flex items-center justify-center bg-cream px-4">
+        <div className="w-full max-w-[380px] bg-white border border-navy/[0.08] rounded-[20px] p-8 text-center">
+          <div className="mx-auto w-12 h-12 rounded-full bg-navy flex items-center justify-center mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8bc53f" strokeWidth="2">
               <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold text-navy-900">
+          <h1 className="text-lg font-semibold text-navy">
             {plural ? 'Inscrições confirmadas' : 'Inscrição confirmada'}
           </h1>
-          <p className="text-sm text-navy-500 mt-2">
+          <p className="text-sm text-navy/55 mt-2">
             {plural
               ? `A inscrição das ${participantes.length} pessoas foi confirmada para`
               : 'Sua visita foi confirmada para'}{' '}
-            <strong>{visita && formatDataLonga(new Date(visita.data + 'T00:00:00'))}</strong>{' '}
-            às <strong>{confirmado}</strong>.
+            <strong className="text-navy">
+              {visita && formatDataLonga(new Date(visita.data + 'T00:00:00'))}
+            </strong>{' '}
+            às <strong className="text-navy">{confirmado}</strong>.
           </p>
-          <p className="text-sm text-navy-500 mt-3">
+          <p className="text-sm text-navy/55 mt-3">
             Confira {plural ? 'os comprovantes' : 'o comprovante'} na aba{' '}
-            <strong>Meus comprovantes</strong> — {plural ? 'eles vão' : 'ele vai'} precisar
-            ser apresentado{plural ? 's' : ''} no dia da visita.
+            <strong className="text-navy">Meus comprovantes</strong> —{' '}
+            {plural ? 'eles vão' : 'ele vai'} precisar ser apresentado{plural ? 's' : ''} no
+            dia da visita.
           </p>
           <button
             onClick={() => navigate('/')}
-            className="w-full mt-6 rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition"
+            className="w-full bg-navy text-white rounded-lg py-[13px] text-sm font-medium mt-6 hover:opacity-90 transition"
           >
             Voltar ao início
           </button>
@@ -201,25 +203,34 @@ export default function Inscricao() {
   }
 
   return (
-    <div className="min-h-screen bg-navy-50 px-4 py-10">
-      <div className="w-full max-w-sm mx-auto">
+    <div className="min-h-screen bg-cream px-4 py-9">
+      <div className="w-full max-w-[380px] mx-auto bg-white border border-navy/[0.08] rounded-[20px] px-6 py-8">
         <button
           onClick={() => navigate('/')}
-          className="text-sm text-navy-400 hover:text-navy-700 transition mb-5"
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-navy mb-6"
         >
-          ← Voltar
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M15 6l-6 6 6 6"
+              stroke="#12213a"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Voltar
         </button>
 
-        <div className="mb-6">
-          <h1 className="text-xl font-semibold text-navy-900">Inscrever-se na visita</h1>
-          <p className="text-sm text-navy-400 mt-1">
-            {visita
-              ? formatDataLonga(new Date(visita.data + 'T00:00:00'))
-              : 'Carregando...'}
-          </p>
-        </div>
+        <h1 className="text-[19px] font-semibold text-navy tracking-tight mb-1">
+          Inscrever-se na visita
+        </h1>
+        <p className="text-[13px] text-navy/45 mb-7">
+          {visita
+            ? formatDataLonga(new Date(visita.data + 'T00:00:00'))
+            : 'Carregando...'}
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} noValidate>
           {participantes.map((p, index) => {
             const opcao = opcaoSelecionada(p.comoSoube)
             const erros = tentouEnviar
@@ -233,110 +244,83 @@ export default function Inscricao() {
               : {}
 
             const classeInput = (temErro) =>
-              `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:ring-1 transition ${
-                temErro
-                  ? 'border-red-400 focus:border-red-500 focus:ring-red-400'
-                  : 'border-navy-200 focus:border-navy-500 focus:ring-navy-500'
+              `w-full bg-transparent border-0 border-b py-2 text-[14.5px] text-navy placeholder:text-navy/35 outline-none transition mb-5 ${
+                temErro ? 'border-red-400' : 'border-navy/15 focus:border-navy/40'
               }`
 
             return (
-              <div
-                key={index}
-                className="bg-white rounded-2xl border border-navy-100 p-6 shadow-sm space-y-4"
-              >
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-navy-800">
+              <div key={index} className={index > 0 ? 'mt-8' : ''}>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[11px] uppercase tracking-wide text-navy/40 font-semibold">
                     {index === 0 ? 'Seus dados' : `Participante ${index + 1}`}
-                  </h2>
+                  </p>
                   {index > 0 && (
                     <button
                       type="button"
                       onClick={() => removerParticipante(index)}
-                      className="text-xs text-navy-400 hover:text-red-500 transition"
+                      className="text-xs text-navy/40 hover:text-red-500 transition"
                     >
                       Remover
                     </button>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-navy-700 mb-1">
-                    Nome completo
-                  </label>
-                  <input
-                    type="text"
-                    value={p.nomeCompleto}
-                    onChange={(e) =>
-                      atualizarParticipante(index, 'nomeCompleto', e.target.value)
-                    }
-                    placeholder="Nome completo"
-                    className={classeInput(erros.nomeCompleto)}
-                  />
-                  {erros.nomeCompleto && (
-                    <p className="text-xs text-red-500 mt-1">{erros.nomeCompleto}</p>
-                  )}
-                </div>
+                <label className="block text-xs text-navy/50 mb-1.5">Nome completo</label>
+                <input
+                  type="text"
+                  value={p.nomeCompleto}
+                  onChange={(e) => atualizarParticipante(index, 'nomeCompleto', e.target.value)}
+                  placeholder="Nome completo"
+                  className={classeInput(erros.nomeCompleto)}
+                />
+                {erros.nomeCompleto && (
+                  <p className="text-xs text-red-500 -mt-4 mb-4">{erros.nomeCompleto}</p>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-navy-700 mb-1">
-                    Telefone
-                  </label>
-                  <input
-                    type="tel"
-                    value={p.telefone}
-                    onChange={(e) =>
-                      atualizarParticipante(index, 'telefone', maskPhone(e.target.value))
-                    }
-                    placeholder="(21) 90000-0000"
-                    className={classeInput(erros.telefone)}
-                  />
-                  {erros.telefone && (
-                    <p className="text-xs text-red-500 mt-1">{erros.telefone}</p>
-                  )}
-                </div>
+                <label className="block text-xs text-navy/50 mb-1.5">Telefone</label>
+                <input
+                  type="tel"
+                  value={p.telefone}
+                  onChange={(e) => atualizarParticipante(index, 'telefone', maskPhone(e.target.value))}
+                  placeholder="(21) 90000-0000"
+                  className={classeInput(erros.telefone)}
+                />
+                {erros.telefone && (
+                  <p className="text-xs text-red-500 -mt-4 mb-4">{erros.telefone}</p>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-navy-700 mb-1">CPF</label>
-                  <input
-                    type="text"
-                    value={p.cpf}
-                    onChange={(e) =>
-                      atualizarParticipante(index, 'cpf', maskCPF(e.target.value))
-                    }
-                    placeholder="000.000.000-00"
-                    className={classeInput(erros.cpf)}
-                  />
-                  {erros.cpf && <p className="text-xs text-red-500 mt-1">{erros.cpf}</p>}
-                </div>
+                <label className="block text-xs text-navy/50 mb-1.5">CPF</label>
+                <input
+                  type="text"
+                  value={p.cpf}
+                  onChange={(e) => atualizarParticipante(index, 'cpf', maskCPF(e.target.value))}
+                  placeholder="000.000.000-00"
+                  className={classeInput(erros.cpf)}
+                />
+                {erros.cpf && <p className="text-xs text-red-500 -mt-4 mb-4">{erros.cpf}</p>}
 
-                <div>
-                  <label className="block text-sm font-medium text-navy-700 mb-1">
-                    Como soube da visita?
-                  </label>
-                  <select
-                    value={p.comoSoube}
-                    onChange={(e) =>
-                      atualizarParticipante(index, 'comoSoube', e.target.value)
-                    }
-                    className={classeInput(erros.comoSoube)}
-                  >
-                    <option value="" disabled>
-                      Selecione uma opção
+                <label className="block text-xs text-navy/50 mb-1.5">Como soube da visita?</label>
+                <select
+                  value={p.comoSoube}
+                  onChange={(e) => atualizarParticipante(index, 'comoSoube', e.target.value)}
+                  className={`${classeInput(erros.comoSoube)} ${!p.comoSoube ? 'text-navy/50' : ''}`}
+                >
+                  <option value="" disabled>
+                    Selecione uma opção
+                  </option>
+                  {OPCOES_COMO_SOUBE.map((o) => (
+                    <option key={o.valor} value={o.valor}>
+                      {o.valor}
                     </option>
-                    {OPCOES_COMO_SOUBE.map((o) => (
-                      <option key={o.valor} value={o.valor}>
-                        {o.valor}
-                      </option>
-                    ))}
-                  </select>
-                  {erros.comoSoube && (
-                    <p className="text-xs text-red-500 mt-1">{erros.comoSoube}</p>
-                  )}
-                </div>
+                  ))}
+                </select>
+                {erros.comoSoube && (
+                  <p className="text-xs text-red-500 -mt-4 mb-4">{erros.comoSoube}</p>
+                )}
 
                 {opcao?.precisaDetalhe && (
-                  <div>
-                    <label className="block text-sm font-medium text-navy-700 mb-1">
+                  <>
+                    <label className="block text-xs text-navy/50 mb-1.5">
                       {opcao.labelDetalhe}
                     </label>
                     <input
@@ -349,9 +333,9 @@ export default function Inscricao() {
                       className={classeInput(erros.comoSoubeDetalhe)}
                     />
                     {erros.comoSoubeDetalhe && (
-                      <p className="text-xs text-red-500 mt-1">{erros.comoSoubeDetalhe}</p>
+                      <p className="text-xs text-red-500 -mt-4 mb-4">{erros.comoSoubeDetalhe}</p>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             )
@@ -361,18 +345,18 @@ export default function Inscricao() {
             <button
               type="button"
               onClick={adicionarParticipante}
-              className="w-full rounded-lg border border-dashed border-navy-300 text-sm font-medium text-navy-600 py-2.5 hover:border-navy-500 hover:text-navy-800 transition"
+              className="w-full border border-navy/15 rounded-lg py-3 text-[13.5px] font-medium text-navy/50 hover:text-navy/70 hover:border-navy/25 transition mt-2 mb-3.5"
             >
               + Adicionar participante
             </button>
           )}
 
-          {erroGeral && <p className="text-sm text-red-600 font-medium">{erroGeral}</p>}
+          {erroGeral && <p className="text-sm text-red-500 font-medium mb-4">{erroGeral}</p>}
 
           <button
             type="submit"
             disabled={enviando}
-            className="w-full rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition disabled:opacity-60"
+            className="w-full bg-navy text-white rounded-lg py-[13px] text-sm font-medium hover:opacity-90 transition disabled:opacity-60"
           >
             {enviando ? 'Confirmando...' : 'Confirmar'}
           </button>

@@ -7,16 +7,16 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  background: #f4f3f0;
 }
 
-/* Scrollbar discreta */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #adc1d9;
+  background: rgba(18, 33, 58, 0.15);
   border-radius: 999px;
 }

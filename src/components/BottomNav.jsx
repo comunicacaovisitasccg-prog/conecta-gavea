@@ -5,9 +5,21 @@ const ITENS = [
     rota: '/',
     label: 'Início',
     icone: (ativo) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ativo ? '#0f2238' : '#7f9ec2'} strokeWidth="1.8">
-        <path d="M3 11.5 12 4l9 7.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V19a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M3 11l9-8 9 8"
+          stroke={ativo ? '#6f8a3f' : 'rgba(18,33,58,0.35)'}
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5 10v10h14V10"
+          stroke={ativo ? '#6f8a3f' : 'rgba(18,33,58,0.35)'}
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -15,9 +27,21 @@ const ITENS = [
     rota: '/minhas-inscricoes',
     label: 'Minhas inscrições',
     icone: (ativo) => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ativo ? '#0f2238' : '#7f9ec2'} strokeWidth="1.8">
-        <path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.5a1.5 1.5 0 0 0 0 3V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1.5a1.5 1.5 0 0 0 0-3V9Z" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 7v10" strokeDasharray="2 2" strokeLinecap="round" />
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+        <rect
+          x="3"
+          y="7"
+          width="18"
+          height="11"
+          rx="2"
+          stroke={ativo ? '#6f8a3f' : 'rgba(18,33,58,0.35)'}
+          strokeWidth="1.6"
+        />
+        <path
+          d="M3 12h18"
+          stroke={ativo ? '#6f8a3f' : 'rgba(18,33,58,0.35)'}
+          strokeWidth="1.6"
+        />
       </svg>
     ),
   },
@@ -28,7 +52,7 @@ export default function BottomNav() {
   const navigate = useNavigate()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-navy-100 z-20">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-navy/[0.07] z-20">
       <div className="max-w-2xl mx-auto flex">
         {ITENS.map((item) => {
           const ativo = location.pathname === item.rota
@@ -36,12 +60,12 @@ export default function BottomNav() {
             <button
               key={item.rota}
               onClick={() => navigate(item.rota)}
-              className="flex-1 flex flex-col items-center gap-1 py-2.5"
+              className="flex-1 flex flex-col items-center gap-1 pt-3 pb-4"
             >
               {item.icone(ativo)}
               <span
-                className={`text-[11px] font-medium ${
-                  ativo ? 'text-navy-900' : 'text-navy-400'
+                className={`text-[10.5px] ${
+                  ativo ? 'font-semibold text-green' : 'font-normal text-navy/40'
                 }`}
               >
                 {item.label}

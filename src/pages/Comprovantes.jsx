@@ -64,26 +64,35 @@ export default function Comprovantes() {
   }
 
   return (
-    <div className="min-h-screen bg-navy-50 px-4 py-10">
-      <div className="w-full max-w-sm mx-auto">
+    <div className="min-h-screen bg-cream px-4 py-10">
+      <div className="w-full max-w-[380px] mx-auto">
         <button
           onClick={() => navigate('/minhas-inscricoes')}
-          className="text-sm text-navy-400 hover:text-navy-700 transition mb-5"
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-navy mb-6"
         >
-          ← Voltar
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M15 6l-6 6 6 6"
+              stroke="#12213a"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Voltar
         </button>
 
         <div className="mb-6">
-          <h1 className="text-xl font-semibold text-navy-900">Meus Comprovantes</h1>
-          <p className="text-sm text-navy-400 mt-1">
+          <h1 className="text-[19px] font-semibold text-navy">Meus Comprovantes</h1>
+          <p className="text-[13px] text-navy/45 mt-1">
             Apresente o comprovante no dia da visita
           </p>
         </div>
 
         {carregando ? (
-          <p className="text-sm text-navy-300">Carregando...</p>
+          <p className="text-sm text-navy/35">Carregando...</p>
         ) : comprovantes.length === 0 ? (
-          <p className="text-sm text-navy-300">
+          <p className="text-sm text-navy/35">
             Você ainda não tem inscrições em visitas.
           </p>
         ) : (
@@ -99,7 +108,7 @@ export default function Comprovantes() {
                 <button
                   onClick={() => baixarComprovante(inscricao)}
                   disabled={baixando === inscricao.id}
-                  className="w-full mt-3 rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition disabled:opacity-60"
+                  className="w-full mt-3 bg-navy text-white rounded-lg py-[13px] text-sm font-medium hover:opacity-90 transition disabled:opacity-60"
                 >
                   {baixando === inscricao.id ? 'Gerando...' : 'Baixar comprovante'}
                 </button>

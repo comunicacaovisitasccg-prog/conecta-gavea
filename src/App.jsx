@@ -23,8 +23,8 @@ function RotaPublica({ children }) {
 
 function TelaCarregando() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-navy-50">
-      <span className="text-sm text-navy-300">Carregando...</span>
+    <div className="min-h-screen flex items-center justify-center bg-cream">
+      <span className="text-sm text-navy/35">Carregando...</span>
     </div>
   )
 }

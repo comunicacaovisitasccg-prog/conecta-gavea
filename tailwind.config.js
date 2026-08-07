@@ -4,26 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: {
-          50: '#eef2f7',
-          100: '#d6e0ec',
-          200: '#adc1d9',
-          300: '#7f9ec2',
-          400: '#4f7aa8',
-          500: '#2e5a89',
-          600: '#1f4269',
-          700: '#152f4d',
-          800: '#0f2238',
-          900: '#0a1826',
-        },
-        lime: {
-          400: '#c8e84a',
-          500: '#b4d92f',
-          600: '#98bd1e',
-        },
+        navy: '#12213a',
+        green: '#6f8a3f',
+        greenfill: '#8bc53f',
+        cream: '#f4f3f0',
+        mint: '#f6f9f0',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Helvetica Neue"',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
+        poppins: ['Poppins', '-apple-system', 'sans-serif'],
       },
     },
   },
