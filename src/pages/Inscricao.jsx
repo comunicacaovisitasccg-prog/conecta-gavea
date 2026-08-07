@@ -22,14 +22,34 @@ function opcaoSelecionada(comoSoube) {
   return OPCOES_COMO_SOUBE.find((o) => o.valor === comoSoube)
 }
 
+// Retorna a mensagem de erro de um campo específico, ou null se estiver ok
+function erroDoCampo(p, campo) {
+  switch (campo) {
+    case 'nomeCompleto':
+      return p.nomeCompleto.trim() ? null : 'Preencha o nome completo'
+    case 'telefone':
+      return p.telefone.trim() ? null : 'Preencha o telefone'
+    case 'cpf':
+      if (!p.cpf.trim()) return 'Preencha o CPF'
+      return isValidCPF(p.cpf) ? null : 'CPF inválido'
+    case 'comoSoube':
+      return p.comoSoube ? null : 'Selecione uma opção'
+    case 'comoSoubeDetalhe': {
+      const opcao = opcaoSelecionada(p.comoSoube)
+      if (!opcao?.precisaDetalhe) return null
+      return p.comoSoubeDetalhe.trim()
+        ? null
+        : `Preencha: ${opcao.labelDetalhe.toLowerCase()}`
+    }
+    default:
+      return null
+  }
+}
+
 function participanteValido(p) {
-  if (!p.nomeCompleto.trim()) return false
-  if (!p.telefone.trim()) return false
-  if (!isValidCPF(p.cpf)) return false
-  if (!p.comoSoube) return false
-  const opcao = opcaoSelecionada(p.comoSoube)
-  if (opcao?.precisaDetalhe && !p.comoSoubeDetalhe.trim()) return false
-  return true
+  return ['nomeCompleto', 'telefone', 'cpf', 'comoSoube', 'comoSoubeDetalhe'].every(
+    (campo) => erroDoCampo(p, campo) === null
+  )
 }
 
 export default function Inscricao() {
@@ -39,7 +59,8 @@ export default function Inscricao() {
 
   const [visita, setVisita] = useState(null)
   const [participantes, setParticipantes] = useState([participanteVazio()])
-  const [erro, setErro] = useState('')
+  const [erroGeral, setErroGeral] = useState('')
+  const [tentouEnviar, setTentouEnviar] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [confirmado, setConfirmado] = useState(null)
 
@@ -75,10 +96,12 @@ export default function Inscricao() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setErro('')
+    setErroGeral('')
+    setTentouEnviar(true)
 
     if (!todosValidos) {
-      setErro('Preencha todos os campos de todos os participantes.')
+      setErroGeral('Preencha todos os campos destacados antes de confirmar.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
 
@@ -124,6 +147,7 @@ export default function Inscricao() {
             horario,
             uid: user?.uid ?? null,
             criadoEm: new Date().toISOString(),
+            sincronizadoPlanilha: false,
           })
         })
 
@@ -132,13 +156,14 @@ export default function Inscricao() {
 
       setConfirmado(horarioEscolhido)
     } catch (err) {
-      setErro(err.message || 'Não foi possível concluir a inscrição.')
+      setErroGeral(err.message || 'Não foi possível concluir a inscrição.')
     } finally {
       setEnviando(false)
     }
   }
 
   if (confirmado) {
+    const plural = participantes.length > 1
     return (
       <div className="min-h-screen flex items-center justify-center bg-navy-50 px-4">
         <div className="w-full max-w-sm bg-white rounded-2xl border border-navy-100 p-6 text-center shadow-sm">
@@ -147,13 +172,20 @@ export default function Inscricao() {
               <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold text-navy-900">Inscrição confirmada</h1>
+          <h1 className="text-lg font-semibold text-navy-900">
+            {plural ? 'Inscrições confirmadas' : 'Inscrição confirmada'}
+          </h1>
           <p className="text-sm text-navy-500 mt-2">
-            {participantes.length > 1
-              ? `Inscrição de ${participantes.length} pessoas confirmada para`
-              : 'Sua visita foi marcada para'}{' '}
+            {plural
+              ? `A inscrição das ${participantes.length} pessoas foi confirmada para`
+              : 'Sua visita foi confirmada para'}{' '}
             <strong>{visita && formatDataLonga(new Date(visita.data + 'T00:00:00'))}</strong>{' '}
             às <strong>{confirmado}</strong>.
+          </p>
+          <p className="text-sm text-navy-500 mt-3">
+            Confira {plural ? 'os comprovantes' : 'o comprovante'} na aba{' '}
+            <strong>Meus comprovantes</strong> — {plural ? 'eles vão' : 'ele vai'} precisar
+            ser apresentado{plural ? 's' : ''} no dia da visita.
           </p>
           <button
             onClick={() => navigate('/')}
@@ -185,9 +217,26 @@ export default function Inscricao() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {participantes.map((p, index) => {
             const opcao = opcaoSelecionada(p.comoSoube)
+            const erros = tentouEnviar
+              ? {
+                  nomeCompleto: erroDoCampo(p, 'nomeCompleto'),
+                  telefone: erroDoCampo(p, 'telefone'),
+                  cpf: erroDoCampo(p, 'cpf'),
+                  comoSoube: erroDoCampo(p, 'comoSoube'),
+                  comoSoubeDetalhe: erroDoCampo(p, 'comoSoubeDetalhe'),
+                }
+              : {}
+
+            const classeInput = (temErro) =>
+              `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:ring-1 transition ${
+                temErro
+                  ? 'border-red-400 focus:border-red-500 focus:ring-red-400'
+                  : 'border-navy-200 focus:border-navy-500 focus:ring-navy-500'
+              }`
+
             return (
               <div
                 key={index}
@@ -214,14 +263,16 @@ export default function Inscricao() {
                   </label>
                   <input
                     type="text"
-                    required
                     value={p.nomeCompleto}
                     onChange={(e) =>
                       atualizarParticipante(index, 'nomeCompleto', e.target.value)
                     }
                     placeholder="Nome completo"
-                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                    className={classeInput(erros.nomeCompleto)}
                   />
+                  {erros.nomeCompleto && (
+                    <p className="text-xs text-red-500 mt-1">{erros.nomeCompleto}</p>
+                  )}
                 </div>
 
                 <div>
@@ -230,28 +281,30 @@ export default function Inscricao() {
                   </label>
                   <input
                     type="tel"
-                    required
                     value={p.telefone}
                     onChange={(e) =>
                       atualizarParticipante(index, 'telefone', maskPhone(e.target.value))
                     }
                     placeholder="(21) 90000-0000"
-                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                    className={classeInput(erros.telefone)}
                   />
+                  {erros.telefone && (
+                    <p className="text-xs text-red-500 mt-1">{erros.telefone}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-navy-700 mb-1">CPF</label>
                   <input
                     type="text"
-                    required
                     value={p.cpf}
                     onChange={(e) =>
                       atualizarParticipante(index, 'cpf', maskCPF(e.target.value))
                     }
                     placeholder="000.000.000-00"
-                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                    className={classeInput(erros.cpf)}
                   />
+                  {erros.cpf && <p className="text-xs text-red-500 mt-1">{erros.cpf}</p>}
                 </div>
 
                 <div>
@@ -259,12 +312,11 @@ export default function Inscricao() {
                     Como soube da visita?
                   </label>
                   <select
-                    required
                     value={p.comoSoube}
                     onChange={(e) =>
                       atualizarParticipante(index, 'comoSoube', e.target.value)
                     }
-                    className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                    className={classeInput(erros.comoSoube)}
                   >
                     <option value="" disabled>
                       Selecione uma opção
@@ -275,6 +327,9 @@ export default function Inscricao() {
                       </option>
                     ))}
                   </select>
+                  {erros.comoSoube && (
+                    <p className="text-xs text-red-500 mt-1">{erros.comoSoube}</p>
+                  )}
                 </div>
 
                 {opcao?.precisaDetalhe && (
@@ -284,14 +339,16 @@ export default function Inscricao() {
                     </label>
                     <input
                       type="text"
-                      required
                       value={p.comoSoubeDetalhe}
                       onChange={(e) =>
                         atualizarParticipante(index, 'comoSoubeDetalhe', e.target.value)
                       }
                       placeholder={opcao.labelDetalhe}
-                      className="w-full rounded-lg border border-navy-200 bg-white px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500 transition"
+                      className={classeInput(erros.comoSoubeDetalhe)}
                     />
+                    {erros.comoSoubeDetalhe && (
+                      <p className="text-xs text-red-500 mt-1">{erros.comoSoubeDetalhe}</p>
+                    )}
                   </div>
                 )}
               </div>
@@ -308,12 +365,12 @@ export default function Inscricao() {
             </button>
           )}
 
-          {erro && <p className="text-sm text-red-600">{erro}</p>}
+          {erroGeral && <p className="text-sm text-red-600 font-medium">{erroGeral}</p>}
 
           <button
             type="submit"
-            disabled={enviando || !todosValidos}
-            className="w-full rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={enviando}
+            className="w-full rounded-lg bg-navy-800 text-white text-sm font-medium py-2.5 hover:bg-navy-700 transition disabled:opacity-60"
           >
             {enviando ? 'Confirmando...' : 'Confirmar'}
           </button>
