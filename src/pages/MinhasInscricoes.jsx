@@ -153,34 +153,38 @@ export default function MinhasInscricoes() {
             Minhas inscrições
           </h1>
 
-          {carregando ? (
-            <p className="text-sm text-navy/35">Carregando...</p>
-          ) : inscricoes.length === 0 ? (
-            <div
-              className="flex items-center gap-3.5 bg-mint rounded-xl px-3.5 py-3 mb-8"
-              style={{ border: '1px solid rgba(139,197,63,0.3)' }}
-            >
-              <div className="relative shrink-0">
-                <div className="w-14 h-14 rounded-full bg-[#eef3e5] flex items-center justify-center overflow-hidden">
-                  <img src={MASCOTE_URL} alt="Mascote" className="w-[85%] h-[85%] object-contain" />
-                </div>
-                <div
-                  className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-greenfill flex items-center justify-center"
-                  style={{ boxShadow: '0 1px 3px rgba(18,33,58,0.2)' }}
-                >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#12213a" strokeWidth="2">
-                    <path d="M5 3v18" strokeLinecap="round" />
-                    <path d="M5 4h12l-2 4 2 4H5" strokeLinejoin="round" />
-                  </svg>
-                </div>
+          <div
+            className="flex items-center gap-3.5 bg-mint rounded-xl px-3.5 py-3 mb-6"
+            style={{ border: '1px solid rgba(139,197,63,0.3)' }}
+          >
+            <div className="relative shrink-0">
+              <div className="w-14 h-14 rounded-full bg-[#eef3e5] flex items-center justify-center overflow-hidden">
+                <img src={MASCOTE_URL} alt="Mascote" className="w-[85%] h-[85%] object-contain" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-navy mb-0.5">Suas inscrições ficam aqui!</p>
-                <p className="text-xs text-navy/55 leading-snug">
-                  Acompanhe as visitas confirmadas e acesse seus comprovantes.
-                </p>
+              <div
+                className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-greenfill flex items-center justify-center"
+                style={{ boxShadow: '0 1px 3px rgba(18,33,58,0.2)' }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#12213a" strokeWidth="2">
+                  <path d="M5 3v18" strokeLinecap="round" />
+                  <path d="M5 4h12l-2 4 2 4H5" strokeLinejoin="round" />
+                </svg>
               </div>
             </div>
+            <div>
+              <p className="text-xs font-semibold text-navy mb-0.5">Suas inscrições ficam aqui!</p>
+              <p className="text-xs text-navy/55 leading-snug">
+                Acompanhe as visitas confirmadas e acesse seus comprovantes.
+              </p>
+            </div>
+          </div>
+
+          {carregando ? (
+            <p className="text-sm text-navy/35 mb-8">Carregando...</p>
+          ) : inscricoes.length === 0 ? (
+            <p className="text-sm text-navy/35 mb-8">
+              Você ainda não tem inscrições em visitas.
+            </p>
           ) : (
             <div className="flex flex-col gap-3 mb-8">
               {inscricoes.map((inscricao) => {
