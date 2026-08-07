@@ -7,6 +7,7 @@ import { formatDataLonga, isValidCPF, maskCPF, maskPhone } from '../lib/validato
 import { OPCOES_COMO_SOUBE } from '../lib/comoSoube'
 
 const MAX_PARTICIPANTES = 3
+const MASCOTE_URL = '/images/mascote-capivara-crop.png'
 
 function participanteVazio() {
   return {
@@ -340,6 +341,21 @@ export default function Inscricao() {
               </div>
             )
           })}
+
+          {participantes.length < MAX_PARTICIPANTES && (
+            <div
+              className="flex items-center gap-3 bg-mint rounded-xl px-3.5 py-3 mt-6 mb-3.5"
+              style={{ border: '1px solid rgba(139,197,63,0.3)' }}
+            >
+              <div className="w-11 h-11 rounded-full bg-[#eef3e5] flex items-center justify-center overflow-hidden shrink-0">
+                <img src={MASCOTE_URL} alt="Mascote" className="w-[85%] h-[85%] object-contain" />
+              </div>
+              <p className="text-xs text-navy/70 leading-snug">
+                Que tal chamar um amigo ou familiar para essa aventura? Adicione os
+                participantes abaixo.
+              </p>
+            </div>
+          )}
 
           {participantes.length < MAX_PARTICIPANTES && (
             <button
