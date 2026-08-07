@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import {
+  arrayUnion,
+  collection,
   collectionGroup,
   doc,
   getDocs,
+  orderBy,
   query,
   runTransaction,
+  setDoc,
   where,
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
@@ -15,6 +19,7 @@ import BottomNav from '../components/BottomNav'
 import { formatDataLonga } from '../lib/validators'
 
 const DIAS_ANTES_PARA_CONFIRMAR = 2
+const VISITAS_BLOQUEADAS_APOS_CANCELAR = 2
 const LOGO_URL = '/images/logo-ccg.png'
 const MASCOTE_URL = '/images/mascote-capivara-crop.png'
 
@@ -126,6 +131,35 @@ export default function MinhasInscricoes() {
           removidoDaPlanilha: false,
         })
       })
+
+      try {
+        const todasSnap = await getDocs(
+          query(collection(db, 'visitas'), orderBy('data', 'asc'))
+        )
+        const todasVisitas = todasSnap.docs.map((d) => ({ id: d.id, data: d.data().data }))
+        const indiceAtual = todasVisitas.findIndex((v) => v.id === paraCancelar.visitaId)
+
+        if (indiceAtual !== -1) {
+          const proximasBloqueadas = todasVisitas.slice(
+            indiceAtual + 1,
+            indiceAtual + 1 + VISITAS_BLOQUEADAS_APOS_CANCELAR
+          )
+          if (proximasBloqueadas.length > 0 && paraCancelar.cpf) {
+            await setDoc(
+              doc(db, 'bloqueiosCpf', paraCancelar.cpf),
+              {
+                visitasBloqueadas: arrayUnion(
+                  ...proximasBloqueadas.map((v) => ({ visitaId: v.id, data: v.data }))
+                ),
+              },
+              { merge: true }
+            )
+          }
+        }
+      } catch {
+        // se o bloqueio falhar por algum motivo, o cancelamento em si já foi concluído
+      }
+
       setInscricoes((atual) => atual.filter((i) => i.id !== paraCancelar.id))
       setParaCancelar(null)
     } finally {

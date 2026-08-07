@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { collection, doc, getDoc, runTransaction } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, runTransaction, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../context/AuthContext'
 import { formatDataLonga, isValidCPF, maskCPF, maskPhone } from '../lib/validators'
@@ -109,6 +109,43 @@ export default function Inscricao() {
     try {
       const necessarias = participantes.length
 
+      if (user?.uid) {
+        const existentesSnap = await getDocs(
+          query(collection(db, 'visitas', visitaId, 'inscricoes'), where('uid', '==', user.uid))
+        )
+        const existentesAtivas = existentesSnap.docs.filter((d) => !d.data().cancelada).length
+        if (existentesAtivas + necessarias > MAX_PARTICIPANTES) {
+          throw new Error(
+            existentesAtivas > 0
+              ? `Você já tem ${existentesAtivas} inscrição(ões) nesta data. O limite é de ${MAX_PARTICIPANTES} pessoas (você + 2) por data.`
+              : `Esse grupo tem mais pessoas do que o limite permitido (${MAX_PARTICIPANTES} por data).`
+          )
+        }
+      }
+
+      for (const p of participantes) {
+        const cpfDigitos = p.cpf.replace(/\D/g, '')
+        const bloqueioSnap = await getDoc(doc(db, 'bloqueiosCpf', cpfDigitos))
+        if (bloqueioSnap.exists()) {
+          const bloqueadas = bloqueioSnap.data().visitasBloqueadas || []
+          const estaBloqueado = bloqueadas.some((b) => b.visitaId === visitaId)
+          if (estaBloqueado) {
+            const maiorData = bloqueadas.reduce(
+              (maior, b) => (b.data > maior ? b.data : maior),
+              ''
+            )
+            const dataLiberacao = maiorData
+              ? ` Poderá se inscrever novamente em visitas após ${formatDataLonga(
+                  new Date(maiorData + 'T00:00:00')
+                )}.`
+              : ''
+            throw new Error(
+              `${p.nomeCompleto || 'Um dos participantes'} não pode se inscrever nesta data por causa de um cancelamento recente.${dataLiberacao}`
+            )
+          }
+        }
+      }
+
       const horarioEscolhido = await runTransaction(db, async (tx) => {
         const visitaRef = doc(db, 'visitas', visitaId)
         const visitaSnap = await tx.get(visitaRef)
@@ -187,10 +224,10 @@ export default function Inscricao() {
             às <strong className="text-navy">{confirmado}</strong>.
           </p>
           <p className="text-sm text-navy/55 mt-3">
-            Confira {plural ? 'os comprovantes' : 'o comprovante'} na aba{' '}
-            <strong className="text-navy">Meus comprovantes</strong> —{' '}
-            {plural ? 'eles vão' : 'ele vai'} precisar ser apresentado{plural ? 's' : ''} no
-            dia da visita.
+            Acompanhe os detalhes na aba{' '}
+            <strong className="text-navy">Minhas inscrições</strong>. Lá também fica{' '}
+            {plural ? 'os comprovantes, que vão' : 'o comprovante, que vai'} precisar ser
+            apresentado{plural ? 's' : ''} no dia da visita.
           </p>
           <button
             onClick={() => navigate('/')}
