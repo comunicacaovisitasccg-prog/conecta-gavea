@@ -6,6 +6,8 @@ import Home from './pages/Home'
 import Inscricao from './pages/Inscricao'
 import MinhasInscricoes from './pages/MinhasInscricoes'
 import Comprovantes from './pages/Comprovantes'
+import Comentarios from './pages/Comentarios'
+import Comentar from './pages/Comentar'
 
 function RotaPrivada({ children }) {
   const { user, loading } = useAuth()
@@ -13,74 +15,28 @@ function RotaPrivada({ children }) {
   if (!user) return <Navigate to="/login" replace />
   return children
 }
-
 function RotaPublica({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <TelaCarregando />
   if (user) return <Navigate to="/" replace />
   return children
 }
-
 function TelaCarregando() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-cream">
-      <span className="text-sm text-navy/35">Carregando...</span>
-    </div>
-  )
+  return <div className="min-h-screen flex items-center justify-center bg-cream"><span className="text-sm text-navy/35">Carregando...</span></div>
 }
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route
-          path="/login"
-          element={
-            <RotaPublica>
-              <Login />
-            </RotaPublica>
-          }
-        />
-        <Route
-          path="/cadastro"
-          element={
-            <RotaPublica>
-              <Cadastro />
-            </RotaPublica>
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <RotaPrivada>
-              <Home />
-            </RotaPrivada>
-          }
-        />
-        <Route
-          path="/inscricao/:visitaId"
-          element={
-            <RotaPrivada>
-              <Inscricao />
-            </RotaPrivada>
-          }
-        />
-        <Route
-          path="/minhas-inscricoes"
-          element={
-            <RotaPrivada>
-              <MinhasInscricoes />
-            </RotaPrivada>
-          }
-        />
-        <Route
-          path="/comprovantes"
-          element={
-            <RotaPrivada>
-              <Comprovantes />
-            </RotaPrivada>
-          }
-        />
+        <Route path="/login" element={<RotaPublica><Login /></RotaPublica>} />
+        <Route path="/cadastro" element={<RotaPublica><Cadastro /></RotaPublica>} />
+        <Route path="/" element={<RotaPrivada><Home /></RotaPrivada>} />
+        <Route path="/inscricao/:visitaId" element={<RotaPrivada><Inscricao /></RotaPrivada>} />
+        <Route path="/minhas-inscricoes" element={<RotaPrivada><MinhasInscricoes /></RotaPrivada>} />
+        <Route path="/comprovantes" element={<RotaPrivada><Comprovantes /></RotaPrivada>} />
+        <Route path="/comentarios" element={<RotaPrivada><Comentarios /></RotaPrivada>} />
+        <Route path="/comentar" element={<RotaPrivada><Comentar /></RotaPrivada>} />
       </Routes>
     </AuthProvider>
   )
