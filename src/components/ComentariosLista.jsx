@@ -31,7 +31,8 @@ export default function ComentariosLista() {
           )
         )
         setComentarios(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-      } catch {
+      } catch (err) {
+        console.error('Erro ao buscar comentários:', err)
         setComentarios([])
       } finally {
         setCarregando(false)
