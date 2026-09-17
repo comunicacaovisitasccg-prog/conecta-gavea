@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import Carrossel from '../components/Carrossel'
 import BottomNav from '../components/BottomNav'
 import AvaliarVisitaCTA from '../components/AvaliarVisitaCTA'
+import ComentariosLista from '../components/ComentariosLista'
 import { formatDataLonga } from '../lib/validators'
 
 const LOGO_URL = '/images/logo-ccg.png'
@@ -128,6 +129,7 @@ export default function Home() {
           </div>
 
           <AvaliarVisitaCTA />
+          <ComentariosLista />
         </div>
 
         <div className="h-8" />
