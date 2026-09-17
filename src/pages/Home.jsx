@@ -6,7 +6,7 @@ import { auth, db } from '../firebase'
 import { useAuth } from '../context/AuthContext'
 import Carrossel from '../components/Carrossel'
 import BottomNav from '../components/BottomNav'
-import ComentariosSection, { ConviteComentarioCard } from '../components/ComentariosSection'
+import AvaliarVisitaCTA from '../components/AvaliarVisitaCTA'
 import { formatDataLonga } from '../lib/validators'
 
 const LOGO_URL = '/images/logo-ccg.png'
@@ -127,8 +127,7 @@ export default function Home() {
             {fotos.length > 0 && <span className="absolute bottom-2.5 left-2.5 bg-greenfill text-navy text-[11px] font-bold px-2.5 py-1 rounded-full">+{visitantes} visitantes já participaram</span>}
           </div>
 
-          <ComentariosSection />
-          <ConviteComentarioCard />
+          <AvaliarVisitaCTA />
         </div>
 
         <div className="h-8" />
